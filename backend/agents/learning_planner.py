@@ -83,6 +83,44 @@ def learning_planner_agent_node(state: StudyState) -> Dict[str, Any]:
         roadmap_data = saved_plan["roadmap"]
         idx = saved_plan.get("current_topic_index", 0)
         curr_topic = roadmap_data[idx]["topic"] if idx < len(roadmap_data) else roadmap_data[-1]["topic"]
+
+        # Multi-day gap detection: check if student is behind schedule or returned after gap
+        current_day = state.get("current_day", 1)
+        expected_day_for_topic = roadmap_data[idx].get("target_day", (idx + 1) * 6) if idx < len(roadmap_data) else target_days
+        schedule_gap_days = current_day - expected_day_for_topic
+
+        # If student returned on a day significantly ahead of their expected schedule day (>2 days drift)
+        if schedule_gap_days >= 2 and idx < len(roadmap_data):
+            updated_roadmap = []
+            for i, item in enumerate(roadmap_data):
+                item_copy = dict(item)
+                if i < idx:
+                    # Completed/past topics preserve their original target_day and status
+                    updated_roadmap.append(item_copy)
+                else:
+                    # Recalibrate remaining topics starting from current_day
+                    remaining_slots = max(1, len(roadmap_data) - idx)
+                    remaining_days = max(remaining_slots * 2, target_days - current_day)
+                    days_per_slot = max(2, remaining_days // remaining_slots)
+                    offset = (i - idx + 1) * days_per_slot
+                    item_copy["target_day"] = min(target_days, current_day + offset)
+                    updated_roadmap.append(item_copy)
+
+            save_roadmap(student_id, updated_roadmap, current_topic_index=idx)
+            planner_update_info = {
+                "reason": f"Multi-day absence or schedule drift detected (Current Day: {current_day}, Expected Day: {expected_day_for_topic}).",
+                "changes_summary": f"Recalibrated deadlines for remaining {len(roadmap_data) - idx} topics to preserve overall deadline without restarting from scratch.",
+                "updated_roadmap": updated_roadmap
+            }
+            return {
+                "roadmap": updated_roadmap,
+                "current_topic_index": idx,
+                "current_topic": curr_topic,
+                "planner_update": planner_update_info,
+                "workflow_history": history,
+                "status": "recalibrated"
+            }
+
         return {
             "roadmap": roadmap_data,
             "current_topic_index": idx,

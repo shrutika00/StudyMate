@@ -162,6 +162,7 @@ class StudyRequest(BaseModel):
     student_id: Optional[str] = Field(default="student_default")
     learning_goal: Optional[str] = Field(default="I want to learn Python for backend development in 30 days")
     target_days: Optional[int] = Field(default=30)
+    current_day: Optional[int] = Field(default=None)
     assessed_level: Optional[str] = Field(default=None)
     quiz_answer: Optional[str] = Field(default=None)
     quiz_answers: Optional[Dict[int, str]] = Field(default=None)

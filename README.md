@@ -161,9 +161,16 @@ Below is an actual verified execution transcript illustrating a full **Poor Perf
 
 ---
 
-## 6. How to Run the Application
+## 6. Documentation Deliverables
+- 📄 **[System Architecture](docs/architecture.md)**: Full component breakdown, agent roles, LangGraph conditional edges, and memory topology.
+- 📄 **[Sample Execution Transcript](docs/sample_transcript.md)**: Two-cycle execution transcript tracing struggle, targeted reteaching, and advancement.
+- 📄 **[Technical Design Decisions](docs/design_decisions.md)**: Detailed rationale for cyclic routing, deterministic scoring, two-tier memory, and multi-day gap recalibration.
 
-### 1. Run Automated Test Suite (26/26 Passing)
+---
+
+## 7. How to Run the Application
+
+### 1. Run Automated Test Suite (28/28 Passing)
 ```powershell
 cd D:\StudyMate
 .\.venv\Scripts\Activate.ps1

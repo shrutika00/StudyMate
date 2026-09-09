@@ -4,6 +4,7 @@ from typing import Dict, Any
 from langchain_core.messages import SystemMessage, HumanMessage
 from ..state import StudyState
 from ..models.schemas import PracticeExercise
+from ..knowledge.rag import rag_retriever
 from .llm import get_llm, extract_text_content
 
 
@@ -33,7 +34,13 @@ def practice_agent_node(state: StudyState) -> Dict[str, Any]:
     topic = state.get("current_topic", "Python Fundamentals & Data Structures")
     level = state.get("assessed_level", "beginner")
     context_list = state.get("retrieved_context", [])
-    context_str = "\n".join(context_list)
+    if not context_list:
+        retrieved_docs = rag_retriever.retrieve(topic, top_k=2)
+        context_str = "\n\n".join(
+            f"Document: {d['title']}\nContent:\n{d['content']}" for d in retrieved_docs
+        )
+    else:
+        context_str = "\n".join(context_list)
     history = list(state.get("workflow_history", []))
     history.append("Practice")
 

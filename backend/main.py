@@ -104,12 +104,15 @@ def study_endpoint(request: StudyRequest):
     student_id = request.student_id or "student_default"
     learning_goal = request.learning_goal or "I want to learn Python for backend development in 30 days"
     target_days = request.target_days or 30
+    student_profile = get_student(student_id)
+    stored_day = student_profile.get("current_day", 1) if student_profile else 1
+    current_day = request.current_day if request.current_day is not None else stored_day
 
     initial_state: StudyState = {
         "student_id": student_id,
         "learning_goal": learning_goal,
         "target_days": target_days,
-        "current_day": 1,
+        "current_day": current_day,
         "assessed_level": request.assessed_level or "beginner",
         "assessment": None,
         "diagnostic_answers": request.quiz_answers,

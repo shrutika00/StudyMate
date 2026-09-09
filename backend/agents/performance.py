@@ -67,10 +67,15 @@ def performance_agent_node(state: StudyState) -> Dict[str, Any]:
     # =========================================================================
     # DETERMINISTIC ROUTING POLICY: ADVANCE vs REINFORCE vs FULL REPLAN
     # =========================================================================
-    # 1. ADVANCE: Strong mastery (score >= 80%)
+    # 1. ADVANCE: Strong mastery (score >= 80%) AND not severely behind
     # 2. REINFORCE: Partial mastery (50% <= score < 80%)
-    # 3. FULL REPLAN: Major struggle (score < 50%) or multiple weak topics
-    if score >= 80:
+    # 3. FULL REPLAN: Major struggle (score < 50%) OR major deadline drift (time_pct - progress_pct > 0.25)
+    major_drift = pace_status == PaceStatus.behind and (time_pct - progress_pct > 0.25)
+
+    if major_drift:
+        routing_decision = RoutingDecision.full_replan
+        summary = f"Major deadline drift detected ({int(time_pct*100)}% of timeline elapsed vs {int(progress_pct*100)}% roadmap progress). Triggering full roadmap replan and pacing recalibration."
+    elif score >= 80:
         routing_decision = RoutingDecision.advance
         summary = f"Strong mastery demonstrated on '{topic}' ({score}%). Ready to advance to the next learning task."
     elif score >= 50:
