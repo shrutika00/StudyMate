@@ -90,6 +90,71 @@ FALLBACK_QUIZZES: Dict[str, List[Dict[str, Any]]] = {
             "explanation": "Dictionaries use hash tables yielding O(1) average lookup time.",
             "question_type": "multiple_choice"
         }
+    ],
+    "sql": [
+        {
+            "id": 1,
+            "question": "Which SQL statement is used to retrieve unique records from a table?",
+            "options": [
+                "A) SELECT DISTINCT",
+                "B) EXTRACT UNIQUE",
+                "C) GET FILTERED",
+                "D) QUERY UNIQUE"
+            ],
+            "correct_option": "A",
+            "explanation": "SELECT DISTINCT removes duplicate rows from the query results.",
+            "question_type": "multiple_choice"
+        },
+        {
+            "id": 2,
+            "question": "Which SQL clause is used to filter groups created by GROUP BY?",
+            "options": [
+                "A) WHERE",
+                "B) HAVING",
+                "C) ORDER BY",
+                "D) LIMIT"
+            ],
+            "correct_option": "B",
+            "explanation": "HAVING filters aggregated groups, whereas WHERE filters individual rows.",
+            "question_type": "multiple_choice"
+        },
+        {
+            "id": 3,
+            "question": "What is the primary difference between INNER JOIN and LEFT JOIN?",
+            "options": [
+                "A) INNER JOIN returns only matched rows; LEFT JOIN returns all left table rows plus matched right rows",
+                "B) LEFT JOIN sorts descending; INNER JOIN sorts ascending",
+                "C) INNER JOIN only works on primary keys",
+                "D) There is no functional difference"
+            ],
+            "correct_option": "A",
+            "explanation": "INNER JOIN requires matches in both tables; LEFT JOIN preserves unmatched left table rows.",
+            "question_type": "multiple_choice"
+        },
+        {
+            "id": 4,
+            "question": "In SQL, COUNT(column_name) counts NULL values in that column.",
+            "options": [
+                "A) True",
+                "B) False"
+            ],
+            "correct_option": "B",
+            "explanation": "COUNT(column) ignores NULL entries; COUNT(*) counts all rows including NULLs.",
+            "question_type": "true_false"
+        },
+        {
+            "id": 5,
+            "question": "Which SQL command is used to add new rows of data into a database table?",
+            "options": [
+                "A) INSERT INTO",
+                "B) ADD RECORD",
+                "C) UPDATE SET",
+                "D) APPEND ROW"
+            ],
+            "correct_option": "A",
+            "explanation": "INSERT INTO inserts one or more rows into a table.",
+            "question_type": "multiple_choice"
+        }
     ]
 }
 
@@ -195,7 +260,11 @@ Output valid JSON matching this schema:
         questions_list = []
 
     if not questions_list:
-        questions_list = FALLBACK_QUIZZES["default"]
+        topic_lower = topic.lower()
+        if any(k in topic_lower for k in ["sql", "database", "query", "table", "schema", "relational"]):
+            questions_list = FALLBACK_QUIZZES["sql"]
+        else:
+            questions_list = FALLBACK_QUIZZES["default"]
 
     quiz_questions = []
     for idx, q in enumerate(questions_list, start=1):

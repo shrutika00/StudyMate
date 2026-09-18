@@ -6,7 +6,7 @@ from typing import List, Dict, Any, Optional
 # Suppress harmless Google GenAI SDK AFC advisory warnings
 logging.getLogger("google_genai").setLevel(logging.ERROR)
 logging.getLogger("google_genai.models").setLevel(logging.ERROR)
-from fastapi import FastAPI, HTTPException, Query, status
+from fastapi import FastAPI, HTTPException, Query, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -59,6 +59,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.middleware("http")
+async def add_no_cache_headers(request: Request, call_next):
+    response = await call_next(request)
+    if request.url.path == "/" or request.url.path.startswith("/static"):
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
+
+
 FRONTEND_DIR = BASE_DIR / "frontend"
 if FRONTEND_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
@@ -69,7 +80,10 @@ def serve_home():
     """Serves the single-page StudyMate interface."""
     index_path = FRONTEND_DIR / "index.html"
     if index_path.exists():
-        return FileResponse(str(index_path))
+        return FileResponse(
+            str(index_path),
+            headers={"Cache-Control": "no-cache, no-store, must-revalidate, max-age=0"}
+        )
     return {"message": "Welcome to StudyMate API. Visit /docs for API documentation."}
 
 

@@ -335,11 +335,41 @@ document.addEventListener('DOMContentLoaded', () => {
     stageSteps.forEach(step => {
       step.addEventListener('click', () => {
         const stageId = step.getAttribute('data-stage');
-        if (activeStudyData || stageId === 'stage-goal') {
+        if (stageId === 'stage-assessment') {
+          const currentGoal = (goalInput && goalInput.value.trim()) || (activeStudyData && activeStudyData.learning_goal) || '';
+          if (currentGoal) {
+            renderAssessmentStage(activeStudyData || { learning_goal: currentGoal });
+          }
+        }
+        if (activeStudyData || stageId === 'stage-goal' || stageId === 'stage-assessment') {
           showStage(stageId);
         }
       });
     });
+
+    if (goalInput) {
+      goalInput.addEventListener('input', () => {
+        const g = goalInput.value.trim();
+        if (g) {
+          const clientQuestions = getClientDiagnosticsForGoal(g);
+          if (!activeStudyData) {
+            activeStudyData = {
+              student_id: currentStudentId,
+              learning_goal: g,
+              goal: g,
+              target_days: 30,
+              assessed_level: levelSelect ? levelSelect.value : 'beginner',
+              current_day: 1,
+              assessment: { questions: clientQuestions }
+            };
+          } else {
+            activeStudyData.learning_goal = g;
+            activeStudyData.goal = g;
+            activeStudyData.assessment = { questions: clientQuestions };
+          }
+        }
+      });
+    }
 
     drawerToggle.addEventListener('click', () => {
       drawerContent.classList.toggle('hidden');
@@ -471,10 +501,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // STAGE 2: ASSESSMENT
   function renderAssessmentStage(data) {
-    const goal = (data && data.learning_goal) || (activeStudyData && activeStudyData.learning_goal) || goalInput.value.trim();
-    const questions = (data && data.assessment && data.assessment.questions && data.assessment.questions.length > 0)
+    const goal = (goalInput && goalInput.value.trim()) || (data && (data.learning_goal || data.goal)) || (activeStudyData && (activeStudyData.learning_goal || activeStudyData.goal)) || '';
+    let questions = (data && data.assessment && data.assessment.questions && data.assessment.questions.length > 0)
       ? data.assessment.questions
       : getClientDiagnosticsForGoal(goal);
+
+    // Subject guard: If student's goal is SQL, ensure questions are SQL questions
+    const goalLower = goal.toLowerCase();
+    const isSqlGoal = goalLower.includes('sql') || goalLower.includes('database');
+    const firstQText = (questions[0] && questions[0].question ? questions[0].question : '').toLowerCase();
+    if (isSqlGoal && (firstQText.includes('python') || (!firstQText.includes('sql') && !firstQText.includes('database')))) {
+      questions = sqlDiagnostics;
+    } else if (goalLower.includes('java') && !goalLower.includes('javascript') && firstQText.includes('python')) {
+      questions = javaDiagnostics;
+    } else if ((goalLower.includes('machine learning') || goalLower.includes('ml')) && firstQText.includes('python')) {
+      questions = mlDiagnostics;
+    }
 
     const assessSubtitle = document.querySelector('#stage-assessment .subtitle');
     if (assessSubtitle && goal) {
@@ -642,26 +684,56 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (data.quiz) {
       questions = [data.quiz];
     } else {
-      questions = [
-        {
-          id: 1,
-          question: 'What does a Python function allow you to do?',
-          options: ['A) Store data permanently', 'B) Reuse a block of code', 'C) Create a database', 'D) Install Python'],
-          correct_option: 'B'
-        },
-        {
-          id: 2,
-          question: 'Which keyword defines a function?',
-          options: ['A) class', 'B) def', 'C) function', 'D) func'],
-          correct_option: 'B'
-        },
-        {
-          id: 3,
-          question: 'What is returned by default if no return statement is present?',
-          options: ['A) None', 'B) 0', 'C) False', 'D) Empty string'],
-          correct_option: 'A'
-        }
-      ];
+      const topicLower = ((data && data.current_topic) || '').toLowerCase();
+      const goalLower = ((activeStudyData && (activeStudyData.learning_goal || activeStudyData.goal)) || '').toLowerCase();
+      if (topicLower.includes('sql') || topicLower.includes('database') || goalLower.includes('sql')) {
+        questions = [
+          {
+            id: 1,
+            question: 'Which SQL statement is used to retrieve unique records from a table?',
+            options: ['A) SELECT DISTINCT', 'B) EXTRACT UNIQUE', 'C) GET FILTERED', 'D) QUERY UNIQUE'],
+            correct_option: 'A'
+          },
+          {
+            id: 2,
+            question: 'Which SQL clause is used to filter groups created by GROUP BY?',
+            options: ['A) WHERE', 'B) HAVING', 'C) ORDER BY', 'D) LIMIT'],
+            correct_option: 'B'
+          },
+          {
+            id: 3,
+            question: 'What is the primary difference between INNER JOIN and LEFT JOIN in SQL?',
+            options: [
+              'A) INNER JOIN returns only matching rows; LEFT JOIN returns all left table rows plus matches',
+              'B) INNER JOIN sorts ascending; LEFT JOIN sorts descending',
+              'C) INNER JOIN only works on primary keys',
+              'D) There is no difference'
+            ],
+            correct_option: 'A'
+          }
+        ];
+      } else {
+        questions = [
+          {
+            id: 1,
+            question: 'What does a Python function allow you to do?',
+            options: ['A) Store data permanently', 'B) Reuse a block of code', 'C) Create a database', 'D) Install Python'],
+            correct_option: 'B'
+          },
+          {
+            id: 2,
+            question: 'Which keyword defines a function?',
+            options: ['A) class', 'B) def', 'C) function', 'D) func'],
+            correct_option: 'B'
+          },
+          {
+            id: 3,
+            question: 'What is returned by default if no return statement is present?',
+            options: ['A) None', 'B) 0', 'C) False', 'D) Empty string'],
+            correct_option: 'A'
+          }
+        ];
+      }
     }
 
     questions.forEach((q, idx) => {
