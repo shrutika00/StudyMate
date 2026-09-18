@@ -4,7 +4,7 @@ from typing import Dict, Any, List
 from langchain_core.messages import SystemMessage, HumanMessage
 from ..state import StudyState
 from ..models.schemas import RoadmapItem, RoadmapItemStatus, LearningPlan
-from ..database.db import save_roadmap, get_roadmap
+from ..database.db import save_roadmap, get_roadmap, get_student
 from .llm import get_llm, extract_text_content
 
 
@@ -63,6 +63,44 @@ DEFAULT_ROADMAP: List[Dict[str, Any]] = [
     }
 ]
 
+DEFAULT_SQL_ROADMAP: List[Dict[str, Any]] = [
+    {
+        "id": 1,
+        "topic": "SQL Fundamentals & Relational Concepts",
+        "description": "Master tables, data types, primary keys, and basic SELECT queries.",
+        "target_day": 5,
+        "status": RoadmapItemStatus.in_progress.value
+    },
+    {
+        "id": 2,
+        "topic": "Filtering, Sorting, and Aggregate Functions",
+        "description": "Apply WHERE, ORDER BY, GROUP BY, HAVING, and functions like COUNT, SUM, AVG.",
+        "target_day": 12,
+        "status": RoadmapItemStatus.pending.value
+    },
+    {
+        "id": 3,
+        "topic": "Table Joins and Multi-Table Relations",
+        "description": "Construct INNER, LEFT, RIGHT, and FULL OUTER joins across normalized schemas.",
+        "target_day": 19,
+        "status": RoadmapItemStatus.pending.value
+    },
+    {
+        "id": 4,
+        "topic": "Subqueries, CTEs, and Window Functions",
+        "description": "Write nested subqueries, common table expressions (WITH), and analytic window functions.",
+        "target_day": 25,
+        "status": RoadmapItemStatus.pending.value
+    },
+    {
+        "id": 5,
+        "topic": "Database Optimization, Indexes, and Transactions",
+        "description": "B-Tree indexing, EXPLAIN query plans, ACID guarantees, and performance tuning.",
+        "target_day": 30,
+        "status": RoadmapItemStatus.pending.value
+    }
+]
+
 
 def learning_planner_agent_node(state: StudyState) -> Dict[str, Any]:
     """
@@ -77,9 +115,17 @@ def learning_planner_agent_node(state: StudyState) -> Dict[str, Any]:
     history = list(state.get("workflow_history", []))
     history.append("Plan")
 
-    # Check Tier 2 Persistent Memory for existing roadmap
+    # Check Tier 2 Persistent Memory for existing roadmap if same goal
+    student_profile = get_student(student_id)
+    same_goal = bool(
+        student_profile and
+        student_profile.get("learning_goal") and
+        student_profile.get("learning_goal", "").strip().lower() == goal.strip().lower()
+    )
+    is_new_assessment = state.get("action") == "assess_submit"
+
     saved_plan = get_roadmap(student_id)
-    if saved_plan and saved_plan.get("roadmap"):
+    if saved_plan and saved_plan.get("roadmap") and same_goal and not is_new_assessment:
         roadmap_data = saved_plan["roadmap"]
         idx = saved_plan.get("current_topic_index", 0)
         curr_topic = roadmap_data[idx]["topic"] if idx < len(roadmap_data) else roadmap_data[-1]["topic"]
@@ -181,12 +227,15 @@ Output valid JSON matching this schema exactly:
         raw_text = extract_text_content(response.content) if hasattr(response, "content") else str(response)
         data = extract_json(raw_text)
         items = data.get("roadmap")
+        goal_lower = goal.lower()
+        topic_fallback = DEFAULT_SQL_ROADMAP if any(k in goal_lower for k in ["sql", "database", "postgres", "mysql"]) else DEFAULT_ROADMAP
         if not items or len(items) < 3:
-            items = DEFAULT_ROADMAP
+            items = topic_fallback
     except Exception as e:
         if "GEMINI_API_KEY" in str(e):
             raise
-        items = DEFAULT_ROADMAP
+        goal_lower = goal.lower()
+        items = DEFAULT_SQL_ROADMAP if any(k in goal_lower for k in ["sql", "database", "postgres", "mysql"]) else DEFAULT_ROADMAP
 
     formatted_roadmap: List[Dict[str, Any]] = []
     for i, item in enumerate(items):

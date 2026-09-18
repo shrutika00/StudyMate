@@ -64,6 +64,97 @@ DIAGNOSTIC_QUESTIONS_BANK = [
     }
 ]
 
+SQL_DIAGNOSTIC_QUESTIONS = [
+    {
+        "id": 1,
+        "question": "Which SQL statement is used to retrieve data from a database table?",
+        "options": [
+            "A) SELECT",
+            "B) EXTRACT",
+            "C) GET",
+            "D) OPEN"
+        ],
+        "correct_option": "A",
+        "explanation": "The SELECT statement is the standard command used to query and fetch records from database tables."
+    },
+    {
+        "id": 2,
+        "question": "Which SQL clause is used to filter records based on specified conditions?",
+        "options": [
+            "A) ORDER BY",
+            "B) WHERE",
+            "C) GROUP BY",
+            "D) LIMIT"
+        ],
+        "correct_option": "B",
+        "explanation": "The WHERE clause filters rows satisfying a boolean condition before grouping or sorting."
+    },
+    {
+        "id": 3,
+        "question": "What is the primary difference between INNER JOIN and LEFT JOIN in SQL?",
+        "options": [
+            "A) INNER JOIN returns only matching rows; LEFT JOIN returns all rows from the left table plus matches",
+            "B) INNER JOIN sorts data in ascending order; LEFT JOIN sorts in descending order",
+            "C) LEFT JOIN can only be used on primary keys; INNER JOIN works on any column",
+            "D) There is no difference between INNER JOIN and LEFT JOIN"
+        ],
+        "correct_option": "A",
+        "explanation": "INNER JOIN requires matches in both tables; LEFT JOIN preserves all left-table rows regardless of matches in the right table."
+    }
+]
+
+JS_DIAGNOSTIC_QUESTIONS = [
+    {
+        "id": 1,
+        "question": "Which keyword declares a block-scoped constant in modern JavaScript?",
+        "options": [
+            "A) const",
+            "B) var",
+            "C) let",
+            "D) static"
+        ],
+        "correct_option": "A",
+        "explanation": "'const' declares block-scoped constants that cannot be reassigned."
+    },
+    {
+        "id": 2,
+        "question": "What does 'typeof null' evaluate to in JavaScript?",
+        "options": [
+            "A) 'undefined'",
+            "B) 'object'",
+            "C) 'null'",
+            "D) 'boolean'"
+        ],
+        "correct_option": "B",
+        "explanation": "typeof null returns 'object' due to legacy design in JavaScript's type tagging."
+    },
+    {
+        "id": 3,
+        "question": "Which array method executes a callback for each element without returning a new array?",
+        "options": [
+            "A) map()",
+            "B) filter()",
+            "C) forEach()",
+            "D) reduce()"
+        ],
+        "correct_option": "C",
+        "explanation": "forEach() runs a function on each element and always returns undefined."
+    }
+]
+
+
+def get_diagnostic_questions_for_goal(goal: str) -> List[Dict[str, Any]]:
+    """Return diagnostic assessment questions tailored to the student's learning goal."""
+    if not goal:
+        return DIAGNOSTIC_QUESTIONS_BANK
+
+    goal_lower = goal.lower()
+    if any(k in goal_lower for k in ["sql", "database", "postgres", "mysql", "sqlite", "query", "queries"]):
+        return SQL_DIAGNOSTIC_QUESTIONS
+    elif any(k in goal_lower for k in ["javascript", "js", "react", "node", "frontend", "typescript"]):
+        return JS_DIAGNOSTIC_QUESTIONS
+    return DIAGNOSTIC_QUESTIONS_BANK
+
 
 def assessment_agent_node(state: StudyState) -> Dict[str, Any]:
     """
@@ -78,32 +169,39 @@ def assessment_agent_node(state: StudyState) -> Dict[str, Any]:
     history = list(state.get("workflow_history", []))
     history.append("Assessment")
 
+    active_questions = get_diagnostic_questions_for_goal(goal)
+
     diag_answers = state.get("diagnostic_answers") or {}
     score = None
     if diag_answers:
         correct_count = 0
-        for q in DIAGNOSTIC_QUESTIONS_BANK:
+        for q in active_questions:
             qid = str(q["id"])
             user_ans = str(diag_answers.get(qid, "")).strip().upper()
             corr = q["correct_option"].strip().upper()
             if user_ans and (user_ans == corr or corr in user_ans):
                 correct_count += 1
-        score = int((correct_count / len(DIAGNOSTIC_QUESTIONS_BANK)) * 100)
+        score = int((correct_count / len(active_questions)) * 100)
 
     existing_profile = get_student(student_id)
-    if existing_profile and existing_profile.get("assessed_level") and not diag_answers:
+    same_goal = bool(
+        existing_profile and
+        existing_profile.get("learning_goal") and
+        existing_profile.get("learning_goal", "").strip().lower() == goal.strip().lower()
+    )
+    if existing_profile and existing_profile.get("assessed_level") and not diag_answers and same_goal:
         assessed_level_str = existing_profile["assessed_level"]
         assessment_obj = AssessmentResult(
             assessed_level=DifficultyLevel(assessed_level_str),
             strengths=["Returning student with established profile"],
             knowledge_gaps=["Continuing customized roadmap"],
             diagnostic_summary=f"Welcome back! Resuming plan at {assessed_level_str} level.",
-            questions=[AssessmentQuestion(**q) for q in DIAGNOSTIC_QUESTIONS_BANK]
+            questions=[AssessmentQuestion(**q) for q in active_questions]
         )
         return {
             "assessed_level": assessed_level_str,
             "assessment": assessment_obj.model_dump(),
-            "diagnostic_questions": DIAGNOSTIC_QUESTIONS_BANK,
+            "diagnostic_questions": active_questions,
             "workflow_history": history,
             "status": "assessed"
         }
@@ -171,7 +269,7 @@ Output valid JSON matching this schema exactly:
         knowledge_gaps=gaps,
         diagnostic_summary=summary,
         diagnostic_score=score,
-        questions=[AssessmentQuestion(**q) for q in DIAGNOSTIC_QUESTIONS_BANK]
+        questions=[AssessmentQuestion(**q) for q in active_questions]
     )
 
     save_or_update_student(
@@ -185,7 +283,7 @@ Output valid JSON matching this schema exactly:
     return {
         "assessed_level": level_val,
         "assessment": assessment_obj.model_dump(),
-        "diagnostic_questions": DIAGNOSTIC_QUESTIONS_BANK,
+        "diagnostic_questions": active_questions,
         "workflow_history": history,
         "status": "assessed"
     }

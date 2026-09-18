@@ -199,3 +199,18 @@ def execute_code_endpoint(request: CodeExecutionRequest):
     from .agents.code_executor import execute_code_safely
     res = execute_code_safely(request.code, timeout_seconds=request.timeout_seconds or 5)
     return CodeExecutionResponse(**res)
+
+
+@app.get("/diagnostic-questions", summary="Get diagnostic assessment questions for a learning goal")
+def diagnostic_questions_endpoint(goal: str = Query(default="Python")):
+    """
+    Retrieve calibrated diagnostic questions tailored to the student's specific learning goal.
+    Supports SQL, Python, JavaScript, and dynamic topic calibration.
+    """
+    from .agents.assessment import get_diagnostic_questions_for_goal
+    questions = get_diagnostic_questions_for_goal(goal)
+    return {
+        "goal": goal,
+        "questions": questions
+    }
+

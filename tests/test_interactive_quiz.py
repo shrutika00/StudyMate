@@ -139,3 +139,58 @@ def test_evaluation_agent_receives_student_quiz_and_practice():
     assert res["quiz_result"]["percentage"] == 100
     assert res["evaluation"]["score"] >= 80
     assert res["evaluation"]["passed"] is True
+
+
+def test_sql_goal_generates_sql_diagnostic_questions():
+    """Verify that learning goal containing SQL returns SQL diagnostic questions instead of Python."""
+    set_test_llm(DeterministicMockLLM())
+    state_sql: StudyState = {
+        "student_id": "test_sql_student",
+        "learning_goal": "i want to learn sql",
+        "target_days": 30,
+        "workflow_history": []
+    }
+    res_sql = assessment_agent_node(state_sql)
+    assert "assessment" in res_sql
+    assert "diagnostic_questions" in res_sql
+    questions = res_sql["diagnostic_questions"]
+    assert len(questions) == 3
+    # Verify questions are SQL-specific, not Python
+    assert "SQL" in questions[0]["question"] or "database" in questions[0]["question"]
+    assert any("SELECT" in opt for opt in questions[0]["options"])
+    assert any("WHERE" in opt for opt in questions[1]["options"])
+    assert any("JOIN" in opt for opt in questions[2]["options"])
+
+    # Verify scoring for SQL diagnostic submission
+    state_sql_submit: StudyState = {
+        "student_id": "test_sql_student_2",
+        "learning_goal": "i want to learn sql",
+        "target_days": 30,
+        "diagnostic_answers": {"1": "A", "2": "B", "3": "A"},
+        "workflow_history": []
+    }
+    res_submit = assessment_agent_node(state_sql_submit)
+    assert res_submit["assessment"]["diagnostic_score"] == 100
+
+
+def test_diagnostic_questions_api_endpoint():
+    """Verify GET /diagnostic-questions returns goal-tailored questions for both SQL and Python."""
+    from fastapi.testclient import TestClient
+    from backend.main import app
+
+    client = TestClient(app)
+
+    # 1. SQL Goal
+    resp_sql = client.get("/diagnostic-questions?goal=i%20want%20to%20learn%20sql")
+    assert resp_sql.status_code == 200
+    data_sql = resp_sql.json()
+    assert len(data_sql["questions"]) == 3
+    assert "SQL" in data_sql["questions"][0]["question"] or "database" in data_sql["questions"][0]["question"]
+
+    # 2. Python Goal
+    resp_py = client.get("/diagnostic-questions?goal=Learn%20Python%20for%20backend")
+    assert resp_py.status_code == 200
+    data_py = resp_py.json()
+    assert len(data_py["questions"]) == 3
+    assert "Python" in data_py["questions"][0]["question"]
+

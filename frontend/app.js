@@ -111,6 +111,89 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   ];
 
+  const sqlDiagnostics = [
+    {
+      id: 1,
+      question: 'Which SQL statement is used to retrieve data from a database table?',
+      options: [
+        'A) SELECT',
+        'B) EXTRACT',
+        'C) GET',
+        'D) OPEN'
+      ],
+      correct_option: 'A'
+    },
+    {
+      id: 2,
+      question: 'Which SQL clause is used to filter records based on specified conditions?',
+      options: [
+        'A) ORDER BY',
+        'B) WHERE',
+        'C) GROUP BY',
+        'D) LIMIT'
+      ],
+      correct_option: 'B'
+    },
+    {
+      id: 3,
+      question: 'What is the primary difference between INNER JOIN and LEFT JOIN in SQL?',
+      options: [
+        'A) INNER JOIN returns only matching rows; LEFT JOIN returns all rows from the left table plus matches',
+        'B) INNER JOIN sorts data in ascending order; LEFT JOIN sorts in descending order',
+        'C) LEFT JOIN can only be used on primary keys; INNER JOIN works on any column',
+        'D) There is no difference between INNER JOIN and LEFT JOIN'
+      ],
+      correct_option: 'A'
+    }
+  ];
+
+  const jsDiagnostics = [
+    {
+      id: 1,
+      question: 'Which keyword declares a block-scoped constant in modern JavaScript?',
+      options: [
+        'A) const',
+        'B) var',
+        'C) let',
+        'D) static'
+      ],
+      correct_option: 'A'
+    },
+    {
+      id: 2,
+      question: 'What does "typeof null" evaluate to in JavaScript?',
+      options: [
+        'A) "undefined"',
+        'B) "object"',
+        'C) "null"',
+        'D) "boolean"'
+      ],
+      correct_option: 'B'
+    },
+    {
+      id: 3,
+      question: 'Which array method executes a callback for each element without returning a new array?',
+      options: [
+        'A) map()',
+        'B) filter()',
+        'C) forEach()',
+        'D) reduce()'
+      ],
+      correct_option: 'C'
+    }
+  ];
+
+  function getClientDiagnosticsForGoal(goal) {
+    const lower = (goal || '').toLowerCase();
+    if (lower.includes('sql') || lower.includes('database') || lower.includes('postgres') || lower.includes('mysql') || lower.includes('sqlite') || lower.includes('queries')) {
+      return sqlDiagnostics;
+    }
+    if (lower.includes('javascript') || lower.includes('js') || lower.includes('react') || lower.includes('node') || lower.includes('frontend')) {
+      return jsDiagnostics;
+    }
+    return defaultDiagnostics;
+  }
+
   initApp();
 
   function initApp() {
@@ -240,7 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // STAGE 1: GOAL
-  goalForm.addEventListener('submit', (e) => {
+  goalForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const goal = goalInput.value.trim();
     const days = parseInt(daysInput.value, 10) || 30;
@@ -248,23 +331,51 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!goal) return;
 
     hideError();
+    setLoading(startLearningBtn, true, 'Preparing Diagnostic Assessment...');
+
+    // Select immediate topic-appropriate questions as default
+    const clientQuestions = getClientDiagnosticsForGoal(goal);
+
     activeStudyData = {
       student_id: currentStudentId,
       learning_goal: goal,
       target_days: days,
       assessed_level: selectedLevel,
-      current_day: 1
+      current_day: 1,
+      assessment: {
+        questions: clientQuestions
+      }
     };
 
-    renderAssessmentStage(activeStudyData);
-    showStage('stage-assessment');
+    try {
+      // Fetch dynamic diagnostic questions tailored to the student's goal from the backend
+      const res = await fetch('/diagnostic-questions?goal=' + encodeURIComponent(goal));
+      if (res.ok) {
+        const data = await res.json();
+        if (data.questions && data.questions.length > 0) {
+          activeStudyData.assessment = { questions: data.questions };
+        }
+      }
+    } catch (err) {
+      console.warn('Using client-side diagnostic questions for goal:', err);
+    } finally {
+      setLoading(startLearningBtn, false, 'Start Learning');
+      renderAssessmentStage(activeStudyData);
+      showStage('stage-assessment');
+    }
   });
 
   // STAGE 2: ASSESSMENT
   function renderAssessmentStage(data) {
-    const questions = (data.assessment && data.assessment.questions && data.assessment.questions.length > 0)
+    const goal = (data && data.learning_goal) || (activeStudyData && activeStudyData.learning_goal) || goalInput.value.trim();
+    const questions = (data && data.assessment && data.assessment.questions && data.assessment.questions.length > 0)
       ? data.assessment.questions
-      : defaultDiagnostics;
+      : getClientDiagnosticsForGoal(goal);
+
+    const assessSubtitle = document.querySelector('#stage-assessment .subtitle');
+    if (assessSubtitle && goal) {
+      assessSubtitle.textContent = 'Answer this short 3-question diagnostic to help StudyMate gauge your baseline level for: ' + goal;
+    }
 
     diagnosticQuestionsContainer.innerHTML = '';
     questions.forEach((q, idx) => {

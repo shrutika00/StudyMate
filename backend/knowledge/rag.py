@@ -93,6 +93,48 @@ Pytest conventions:
 - Mocking (unittest.mock): Replaces slow or external network I/O with deterministic substitutes.
 Coverage metrics verify which branches of logic are exercised during test execution.
 """
+    },
+    {
+        "id": "doc_sql_fundamentals",
+        "topic": "SQL Fundamentals & Relational Concepts",
+        "title": "Relational Tables, Data Types, Constraints, and SELECT Projections",
+        "content": """
+Structured Query Language (SQL) is the standard declarative language for interacting with relational databases.
+Core concepts:
+- Tables: Two-dimensional schemas with rows (records/tuples) and columns (attributes).
+- Primary Key (PK): Uniquely identifies each record in a table, enforcing entity integrity.
+- Foreign Key (FK): Establishes relational integrity linking records between parent and child tables.
+- The SELECT statement retrieves column projections: SELECT col1, col2 FROM table_name.
+- Aliases: AS keyword renames result columns or table references for readability.
+- DISTINCT: Filters out duplicate rows from query results.
+"""
+    },
+    {
+        "id": "doc_sql_filtering_aggregates",
+        "topic": "Filtering, Sorting, and Aggregate Functions",
+        "title": "WHERE Conditions, ORDER BY Sorting, and GROUP BY Aggregations",
+        "content": """
+Filtering and transforming records in SQL:
+- WHERE clause: Applies boolean criteria (AND, OR, NOT, IN, BETWEEN, LIKE) to filter rows before aggregation.
+- ORDER BY: Sorts result sets by one or more columns in ASC (default) or DESC order.
+- Aggregate Functions: Compute summary statistics over sets of values: COUNT(), SUM(), AVG(), MIN(), MAX().
+- GROUP BY: Groups rows sharing identical attribute values into summary rows.
+- HAVING clause: Filters groups AFTER aggregation (unlike WHERE which filters before grouping).
+"""
+    },
+    {
+        "id": "doc_sql_joins",
+        "topic": "Table Joins and Multi-Table Relations",
+        "title": "Relational Multi-Table Joins: INNER, LEFT, RIGHT, and FULL OUTER",
+        "content": """
+Joins combine columns from one or more tables based on common relational keys.
+- INNER JOIN: Returns only records having matching keys in both participating tables.
+- LEFT JOIN (LEFT OUTER JOIN): Returns all records from the left table, and matching records from the right table. Unmatched right columns evaluate to NULL.
+- RIGHT JOIN: Returns all records from right table, and matching rows from left table.
+- FULL OUTER JOIN: Returns all records when there is a match in either table.
+- CROSS JOIN: Produces the Cartesian product of all rows across both tables.
+- Best Practice: Always explicitly index foreign key columns to avoid costly table scans during join operations.
+"""
     }
 ]
 
