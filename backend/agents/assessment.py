@@ -247,6 +247,8 @@ def generate_topic_diagnostic_questions(goal: str) -> List[Dict[str, Any]]:
                 "explanation": "Optimization algorithms iteratively adjust model weights to minimize the loss function."
             }
         ]
+    elif any(k in goal_lower for k in ["javascript", "js", "frontend", "react", "node"]):
+        return JS_DIAGNOSTIC_QUESTIONS
     else:
         topic = extract_topic_from_goal(goal)
         return [

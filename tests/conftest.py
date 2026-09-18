@@ -27,12 +27,18 @@ class DeterministicMockLLM:
             goal_match = re.search(r'Goal:\s*"([^"]+)"', prompt_text)
             current_goal = goal_match.group(1) if goal_match else "Python"
             questions = generate_topic_diagnostic_questions(current_goal)
+            score_match = re.search(r"Diagnostic Score:\s*(\d+)", prompt_text)
+            if score_match:
+                s = int(score_match.group(1))
+                lvl = "advanced" if s >= 80 else ("intermediate" if s >= 50 else "beginner")
+            else:
+                lvl = "beginner"
             return AIMessage(content=json.dumps({
                 "diagnostic_questions": questions,
-                "assessed_level": "beginner",
+                "assessed_level": lvl,
                 "strengths": [f"Clear technical ambition in {current_goal}", "Direct practical orientation"],
                 "knowledge_gaps": [f"Core mechanics of {current_goal}", f"Applied paradigms in {current_goal}"],
-                "diagnostic_summary": f"Assessed at beginner level for {current_goal}."
+                "diagnostic_summary": f"Assessed at {lvl} level for {current_goal}."
             }))
 
         # 2. Learning Planner Agent
