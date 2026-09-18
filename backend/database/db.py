@@ -159,6 +159,16 @@ def get_roadmap(student_id: str) -> Optional[Dict[str, Any]]:
         }
 
 
+def clear_student_session(student_id: str) -> None:
+    """Clear active roadmap and active quizzes for student when starting a fresh goal."""
+    init_db()
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM student_roadmaps WHERE student_id = ?", (student_id,))
+        cursor.execute("DELETE FROM student_active_quizzes WHERE student_id = ?", (student_id,))
+        conn.commit()
+
+
 def record_topic_mastery(student_id: str, topic_name: str, score: int, status: str) -> None:
     """Update topic mastery record for persistent tracking of strong and weak areas."""
     init_db()
@@ -268,3 +278,15 @@ def get_active_quiz(student_id: str) -> Optional[Dict[str, Any]]:
             except Exception:
                 return None
     return None
+
+
+def clear_student_session(student_id: str) -> None:
+    """Clear active roadmap, active quizzes, and student profile when starting a fresh goal."""
+    init_db()
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM student_active_quizzes WHERE student_id = ?", (student_id,))
+        cursor.execute("DELETE FROM student_roadmaps WHERE student_id = ?", (student_id,))
+        cursor.execute("DELETE FROM students WHERE student_id = ?", (student_id,))
+        conn.commit()
+

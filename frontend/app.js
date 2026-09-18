@@ -183,15 +183,116 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   ];
 
+  const javaDiagnostics = [
+    {
+      id: 1,
+      question: 'In Java, what is the primary role of the Java Virtual Machine (JVM)?',
+      options: [
+        'A) Direct compilation to native machine code without runtime bytecode',
+        'B) Executing compiled Java bytecode across different operating systems',
+        'C) Providing an embedded client-side browser DOM engine',
+        'D) Serving static HTML assets over local sockets'
+      ],
+      correct_option: 'B'
+    },
+    {
+      id: 2,
+      question: 'Which keyword is used in Java to inherit a class?',
+      options: ['A) implements', 'B) extends', 'C) inherits', 'D) super'],
+      correct_option: 'B'
+    },
+    {
+      id: 3,
+      question: 'In Java, which collection class provides O(1) average time complexity for key-value lookups?',
+      options: ['A) ArrayList', 'B) LinkedList', 'C) HashMap', 'D) TreeSet'],
+      correct_option: 'C'
+    }
+  ];
+
+  const mlDiagnostics = [
+    {
+      id: 1,
+      question: 'In Machine Learning, what is the primary purpose of splitting data into training and test sets?',
+      options: [
+        'A) To evaluate model generalization on unseen data and detect overfitting',
+        'B) To compress the dataset for faster storage',
+        'C) To eliminate feature engineering requirements',
+        'D) To encrypt features for privacy during training'
+      ],
+      correct_option: 'A'
+    },
+    {
+      id: 2,
+      question: 'Which of the following is a supervised learning algorithm commonly used for classification?',
+      options: ['A) K-Means Clustering', 'B) Random Forest', 'C) Principal Component Analysis (PCA)', 'D) Apriori Association Rules'],
+      correct_option: 'B'
+    },
+    {
+      id: 3,
+      question: 'What does an optimization algorithm like Gradient Descent minimize during model training?',
+      options: [
+        'A) The learning rate schedule',
+        'B) The number of input features',
+        'C) The loss function (error between predictions and true labels)',
+        'D) The size of the test dataset'
+      ],
+      correct_option: 'C'
+    }
+  ];
+
   function getClientDiagnosticsForGoal(goal) {
     const lower = (goal || '').toLowerCase();
     if (lower.includes('sql') || lower.includes('database') || lower.includes('postgres') || lower.includes('mysql') || lower.includes('sqlite') || lower.includes('queries')) {
       return sqlDiagnostics;
     }
+    if (lower.includes('java') && !lower.includes('javascript')) {
+      return javaDiagnostics;
+    }
+    if (lower.includes('machine learning') || lower.includes('ml') || lower.includes('deep learning') || lower.includes('artificial intelligence') || lower.includes('data science')) {
+      return mlDiagnostics;
+    }
     if (lower.includes('javascript') || lower.includes('js') || lower.includes('react') || lower.includes('node') || lower.includes('frontend')) {
       return jsDiagnostics;
     }
-    return defaultDiagnostics;
+    if (lower.includes('python')) {
+      return defaultDiagnostics;
+    }
+    const topic = (goal || 'Software Engineering').replace(/^(i\s+want\s+to\s+learn\s+|learn\s+|study\s+)/i, '').trim();
+    return [
+      {
+        id: 1,
+        question: 'What is a foundational concept or primary purpose of ' + topic + '?',
+        options: [
+          'A) Core principles, syntax, and fundamental architecture of ' + topic,
+          'B) An unrelated operating system kernel driver',
+          'C) A static hardware component used for cooling servers',
+          'D) A legacy spreadsheet formula language'
+        ],
+        correct_option: 'A'
+      },
+      {
+        id: 2,
+        question: 'Which core syntax, mechanism, or operation is fundamental when working with ' + topic + '?',
+        options: [
+          'A) Arbitrary memory corruption without type checking',
+          'B) Idiomatic standard abstractions, modular workflows, and core libraries in ' + topic,
+          'C) Formatting hard drive sectors during routine compilation',
+          'D) Disabling all runtime error handling and exceptions'
+        ],
+        correct_option: 'B'
+      },
+      {
+        id: 3,
+        question: 'In practical application of ' + topic + ', which engineering practice ensures stability and performance?',
+        options: [
+          'A) Hardcoding credentials directly into public repositories',
+          'B) Disabling compiler optimizations and tests entirely',
+          'C) Thorough automated unit testing, profiling, and following ' + topic + ' idioms',
+          'D) Running infinite loops without exit conditions'
+        ],
+        correct_option: 'C'
+      }
+    ];
   }
 
   initApp();
@@ -258,6 +359,9 @@ document.addEventListener('DOMContentLoaded', () => {
     activeStudyData = null;
     starterPracticeCodeBackup = '';
     hideError();
+
+    // Clear backend persistent session so new goal starts fresh
+    fetch('/reset-session?student_id=' + encodeURIComponent(currentStudentId), { method: 'POST' }).catch(() => {});
 
     // Reset Goal Form fields
     if (goalInput) {
@@ -419,9 +523,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setLoading(submitAssessmentBtn, true, 'Evaluating Assessment & Building Roadmap...');
 
-    const goal = (activeStudyData && activeStudyData.learning_goal) || goalInput.value.trim() || 'Python for backend development in 30 days';
+    const goal = (activeStudyData && (activeStudyData.goal || activeStudyData.learning_goal)) || goalInput.value.trim() || 'Python for backend development in 30 days';
     const days = (activeStudyData && activeStudyData.target_days) || parseInt(daysInput.value, 10) || 30;
     const assessedLevel = (activeStudyData && activeStudyData.assessed_level) || levelSelect.value || 'beginner';
+    const activeQuestions = (activeStudyData && activeStudyData.assessment && activeStudyData.assessment.questions) || null;
 
     try {
       const res = await fetch('/study', {
@@ -429,10 +534,12 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           student_id: currentStudentId,
+          goal: goal,
           learning_goal: goal,
           target_days: days,
           assessed_level: assessedLevel,
           quiz_answers: answers,
+          diagnostic_questions: activeQuestions,
           action: 'assess_submit'
         })
       });

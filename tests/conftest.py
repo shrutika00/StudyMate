@@ -22,23 +22,32 @@ class DeterministicMockLLM:
 
         # 1. Assessment Agent
         if "Assessment Agent" in prompt_text:
+            import re
+            from backend.agents.assessment import generate_topic_diagnostic_questions
+            goal_match = re.search(r'Goal:\s*"([^"]+)"', prompt_text)
+            current_goal = goal_match.group(1) if goal_match else "Python"
+            questions = generate_topic_diagnostic_questions(current_goal)
             return AIMessage(content=json.dumps({
+                "diagnostic_questions": questions,
                 "assessed_level": "beginner",
-                "strengths": ["Clear technical ambition", "Direct backend orientation"],
-                "knowledge_gaps": ["Relational schemas", "Asynchronous event loops"],
-                "diagnostic_summary": "Assessed at beginner level with 30-day target."
+                "strengths": [f"Clear technical ambition in {current_goal}", "Direct practical orientation"],
+                "knowledge_gaps": [f"Core mechanics of {current_goal}", f"Applied paradigms in {current_goal}"],
+                "diagnostic_summary": f"Assessed at beginner level for {current_goal}."
             }))
 
         # 2. Learning Planner Agent
         if "Learning Planner Agent" in prompt_text:
+            import re
+            goal_match = re.search(r'Goal:\s*"([^"]+)"', prompt_text)
+            current_goal = goal_match.group(1) if goal_match else "Python"
+            if "sql" in current_goal.lower():
+                from backend.agents.learning_planner import DEFAULT_SQL_ROADMAP
+                roadmap_items = DEFAULT_SQL_ROADMAP
+            else:
+                from backend.agents.learning_planner import DEFAULT_ROADMAP
+                roadmap_items = DEFAULT_ROADMAP
             return AIMessage(content=json.dumps({
-                "roadmap": [
-                    {"id": 1, "topic": "Python Fundamentals & Data Structures", "description": "Core primitives", "target_day": 5},
-                    {"id": 2, "topic": "Functions, Scope, and Object-Oriented Programming", "description": "OOP & closures", "target_day": 12},
-                    {"id": 3, "topic": "REST APIs, HTTP Protocols, and FastAPI Framework", "description": "Web endpoints", "target_day": 19},
-                    {"id": 4, "topic": "Relational Databases, SQL, and SQLite Persistence", "description": "SQL & tables", "target_day": 25},
-                    {"id": 5, "topic": "Asynchronous Programming, Event Loops, and AsyncIO", "description": "Async/await", "target_day": 30}
-                ]
+                "roadmap": roadmap_items
             }))
 
         # 3. Tutor Agent
@@ -132,6 +141,7 @@ def clean_state():
         conn.execute("DELETE FROM students")
         conn.execute("DELETE FROM topic_mastery")
         conn.execute("DELETE FROM learning_sessions")
+        conn.execute("DELETE FROM student_active_quizzes")
         conn.commit()
     yield
     reset_test_llm()

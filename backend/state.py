@@ -12,6 +12,7 @@ class StudyState(TypedDict, total=False):
     # Student & Goal Metadata
     student_id: str
     learning_goal: str
+    goal: Optional[str]
     target_days: int
     current_day: int
     assessed_level: str

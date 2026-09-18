@@ -194,3 +194,93 @@ def test_diagnostic_questions_api_endpoint():
     assert len(data_py["questions"]) == 3
     assert "Python" in data_py["questions"][0]["question"]
 
+
+def test_requirement_1_goal_sql_diagnostic_questions():
+    """Test 1: Goal = 'I want to learn SQL' -> diagnostic questions are SQL-related."""
+    from fastapi.testclient import TestClient
+    from backend.main import app
+
+    client = TestClient(app)
+    resp = client.get("/diagnostic-questions?goal=I%20want%20to%20learn%20SQL")
+    assert resp.status_code == 200
+    data = resp.json()
+    questions = data["questions"]
+    assert len(questions) == 3
+    q_texts = " ".join([q["question"] + " " + " ".join(q["options"]) for q in questions]).lower()
+    assert "sql" in q_texts or "database" in q_texts or "select" in q_texts
+    assert "python" not in q_texts
+
+
+def test_requirement_2_goal_python_diagnostic_questions():
+    """Test 2: Goal = 'I want to learn Python for backend development' -> diagnostic questions are Python-related."""
+    from fastapi.testclient import TestClient
+    from backend.main import app
+
+    client = TestClient(app)
+    resp = client.get("/diagnostic-questions?goal=I%20want%20to%20learn%20Python%20for%20backend%20development")
+    assert resp.status_code == 200
+    data = resp.json()
+    questions = data["questions"]
+    assert len(questions) == 3
+    q_texts = " ".join([q["question"] + " " + " ".join(q["options"]) for q in questions]).lower()
+    assert "python" in q_texts
+
+
+def test_requirement_3_switch_python_to_sql_diagnostic_questions():
+    """Test 3: Start with Python -> click New Goal -> enter SQL -> diagnostic uses SQL, not Python."""
+    from fastapi.testclient import TestClient
+    from backend.main import app
+
+    client = TestClient(app)
+    student_id = "test_student_switch_py_sql"
+
+    # 1. Start with Python goal
+    resp_py = client.get(f"/diagnostic-questions?goal=I%20want%20to%20learn%20Python&student_id={student_id}")
+    assert resp_py.status_code == 200
+    py_text = " ".join([q["question"] for q in resp_py.json()["questions"]]).lower()
+    assert "python" in py_text
+
+    # 2. Click "New Goal" (triggers reset-session)
+    reset_resp = client.post(f"/reset-session?student_id={student_id}")
+    assert reset_resp.status_code == 200
+
+    # 3. Enter SQL goal
+    resp_sql = client.get(f"/diagnostic-questions?goal=I%20want%20to%20learn%20SQL&student_id={student_id}")
+    assert resp_sql.status_code == 200
+    sql_questions = resp_sql.json()["questions"]
+    sql_text = " ".join([q["question"] + " " + " ".join(q["options"]) for q in sql_questions]).lower()
+
+    # Diagnostic MUST use SQL, and NOT Python
+    assert "sql" in sql_text or "database" in sql_text or "select" in sql_text
+    assert "python" not in sql_text
+
+
+def test_requirement_4_switch_sql_to_java_diagnostic_questions():
+    """Test 4: Start with SQL -> click New Goal -> enter Java -> diagnostic uses Java, not SQL."""
+    from fastapi.testclient import TestClient
+    from backend.main import app
+
+    client = TestClient(app)
+    student_id = "test_student_switch_sql_java"
+
+    # 1. Start with SQL goal
+    resp_sql = client.get(f"/diagnostic-questions?goal=I%20want%20to%20learn%20SQL&student_id={student_id}")
+    assert resp_sql.status_code == 200
+    sql_text = " ".join([q["question"] for q in resp_sql.json()["questions"]]).lower()
+    assert "sql" in sql_text or "database" in sql_text
+
+    # 2. Click "New Goal" (triggers reset-session)
+    reset_resp = client.post(f"/reset-session?student_id={student_id}")
+    assert reset_resp.status_code == 200
+
+    # 3. Enter Java goal
+    resp_java = client.get(f"/diagnostic-questions?goal=I%20want%20to%20learn%20Java&student_id={student_id}")
+    assert resp_java.status_code == 200
+    java_questions = resp_java.json()["questions"]
+    java_text = " ".join([q["question"] + " " + " ".join(q["options"]) for q in java_questions]).lower()
+
+    # Diagnostic MUST use Java, and NOT SQL
+    assert "java" in java_text or "jvm" in java_text
+    assert "select" not in java_text
+
+

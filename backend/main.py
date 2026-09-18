@@ -104,19 +104,27 @@ def study_endpoint(request: StudyRequest):
             )
 
     student_id = request.student_id or "student_default"
-    learning_goal = request.learning_goal or "I want to learn Python for backend development in 30 days"
+    learning_goal = request.goal or request.learning_goal or "I want to learn Python for backend development in 30 days"
     target_days = request.target_days or 30
     student_profile = get_student(student_id)
     stored_day = student_profile.get("current_day", 1) if student_profile else 1
     current_day = request.current_day if request.current_day is not None else stored_day
 
+    # If student starts a different goal, clear stale roadmap and quizzes from SQLite
+    if student_profile and student_profile.get("learning_goal"):
+        if student_profile["learning_goal"].strip().lower() != learning_goal.strip().lower():
+            from .database.db import clear_student_session
+            clear_student_session(student_id)
+
     initial_state: StudyState = {
         "student_id": student_id,
         "learning_goal": learning_goal,
+        "goal": learning_goal,
         "target_days": target_days,
         "current_day": current_day,
         "assessed_level": request.assessed_level or "beginner",
         "assessment": None,
+        "diagnostic_questions": getattr(request, "diagnostic_questions", None),
         "diagnostic_answers": request.quiz_answers,
         "roadmap": [],
         "current_topic_index": 0,
@@ -202,10 +210,10 @@ def execute_code_endpoint(request: CodeExecutionRequest):
 
 
 @app.get("/diagnostic-questions", summary="Get diagnostic assessment questions for a learning goal")
-def diagnostic_questions_endpoint(goal: str = Query(default="Python")):
+def diagnostic_questions_endpoint(goal: str = Query(default="Python"), student_id: str = Query(default="student_default")):
     """
     Retrieve calibrated diagnostic questions tailored to the student's specific learning goal.
-    Supports SQL, Python, JavaScript, and dynamic topic calibration.
+    Supports SQL, Python, Java, Machine Learning, and dynamic topic calibration.
     """
     from .agents.assessment import get_diagnostic_questions_for_goal
     questions = get_diagnostic_questions_for_goal(goal)
@@ -213,4 +221,16 @@ def diagnostic_questions_endpoint(goal: str = Query(default="Python")):
         "goal": goal,
         "questions": questions
     }
+
+
+@app.post("/reset-session", summary="Reset student active session for a new goal")
+def reset_session_endpoint(student_id: str = Query(default="student_default")):
+    """Clear active roadmap, active quiz, and profile state so a new goal starts completely fresh."""
+    from .database.db import clear_student_session
+    clear_student_session(student_id)
+    return {
+        "status": "success",
+        "message": f"Session cleared for student {student_id}"
+    }
+
 
