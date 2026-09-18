@@ -163,10 +163,80 @@ document.addEventListener('DOMContentLoaded', () => {
       icon.textContent = drawerContent.classList.contains('hidden') ? '▶' : '▼';
     });
 
-    resetSessionBtn.addEventListener('click', () => {
-      activeStudyData = null;
-      showStage('stage-goal');
-    });
+    if (resetSessionBtn) {
+      resetSessionBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        resetToNewGoal();
+      });
+    }
+  }
+
+  function resetToNewGoal() {
+    activeStudyData = null;
+    starterPracticeCodeBackup = '';
+    hideError();
+
+    // Reset Goal Form fields
+    if (goalInput) {
+      goalInput.value = '';
+      goalInput.placeholder = 'e.g. I want to learn Python for backend development in 30 days';
+    }
+    if (daysInput) daysInput.value = '30';
+    if (levelSelect) levelSelect.value = 'beginner';
+    setLoading(startLearningBtn, false, 'Start Learning');
+
+    // Reset Stage 2: Assessment
+    if (diagnosticQuestionsContainer) diagnosticQuestionsContainer.innerHTML = '';
+    if (assessmentResultBox) assessmentResultBox.classList.add('hidden');
+    if (submitAssessmentBtn) {
+      submitAssessmentBtn.classList.remove('hidden');
+      setLoading(submitAssessmentBtn, false, 'Submit Assessment');
+    }
+
+    // Reset Stage 3: Learning Plan
+    if (roadmapList) roadmapList.innerHTML = '';
+    if (planRoadmapTitle) planRoadmapTitle.textContent = 'Your Learning Roadmap';
+    if (startFirstLessonBtn) setLoading(startFirstLessonBtn, false, 'Start Current Lesson →');
+
+    // Reset Stage 4: Learn / Concept
+    if (learnTopicTitle) learnTopicTitle.textContent = 'Current Topic: Python Fundamentals & Data Structures';
+    if (learnExplanation) learnExplanation.innerHTML = '';
+    if (learnKeyPoints) learnKeyPoints.innerHTML = '';
+    if (learnSourcesTags) learnSourcesTags.innerHTML = '';
+
+    // Reset Stage 5: Quiz
+    if (quizQuestionsForm) quizQuestionsForm.innerHTML = '';
+    if (quizResultCard) quizResultCard.classList.add('hidden');
+    const quizActions = document.getElementById('quiz-actions-container');
+    if (quizActions) quizActions.classList.remove('hidden');
+    if (submitQuizBtn) setLoading(submitQuizBtn, false, 'Submit Quiz');
+
+    // Reset Stage 6: Practice
+    if (practiceProblemStatement) practiceProblemStatement.textContent = '';
+    if (practiceExpectedOutput) practiceExpectedOutput.textContent = '';
+    if (practiceHintsList) practiceHintsList.innerHTML = '';
+    if (practiceCodeArea) practiceCodeArea.value = '';
+    if (practiceConsoleContainer) practiceConsoleContainer.classList.add('hidden');
+    if (practiceConsoleOutput) practiceConsoleOutput.textContent = '';
+    if (submitPracticeBtn) setLoading(submitPracticeBtn, false, 'Submit Solution for Evaluation →');
+    if (runCodeBtn) setLoading(runCodeBtn, false, '▶ Run Code');
+
+    // Reset Stage 7: Performance & Conditional Routing
+    if (perfStrongList) perfStrongList.innerHTML = '';
+    if (perfWeakList) perfWeakList.innerHTML = '';
+    if (evaluatorFeedbackText) evaluatorFeedbackText.textContent = '';
+    if (routingDecisionText) routingDecisionText.textContent = '';
+    if (plannerUpdateBox) plannerUpdateBox.classList.add('hidden');
+    if (workflowStepsFlow) workflowStepsFlow.innerHTML = '';
+    if (nextTaskBtn) setLoading(nextTaskBtn, false, 'Proceed to Next Task →');
+
+    // Show Stage 1 & smooth scroll to top
+    showStage('stage-goal');
+
+    // Focus input so user can type new goal immediately
+    if (goalInput) {
+      goalInput.focus();
+    }
   }
 
   // STAGE 1: GOAL

@@ -1,235 +1,235 @@
 <!DOCTYPE html>
-<html lang=en>
+<html lang="en">
 <head>
-  <meta charset=UTF-8 />
-  <meta name=viewport content=width=device-width, initial-scale=1.0 />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>StudyMate — Personalized AI Learning Companion</title>
-  <link rel=stylesheet href=/static/style.css />
+  <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
-  <div class=app-layout>
+  <div class="app-layout">
     <!-- Top Header & Navigation -->
-    <header class=app-header>
-      <div class=brand>
-        <span class=brand-icon>🎓</span>
-        <div class=brand-text>
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-icon">🎓</span>
+        <div class="brand-text">
           <h1>StudyMate</h1>
-          <p id=student-status-line>Your Personalized AI Learning Companion</p>
+          <p id="student-status-line">Your Personalized AI Learning Companion</p>
         </div>
       </div>
-      <div class=header-actions>
-        <button id=reset-session-btn class=btn-sm btn-ghost title=Start a fresh learning journey>New Goal</button>
+      <div class="header-actions">
+        <button type="button" id="reset-session-btn" class="btn btn-sm btn-ghost" title="Start a fresh learning journey">New Goal</button>
       </div>
     </header>
 
     <!-- Visual Journey Step Indicator -->
-    <nav class=stages-nav>
-      <div class=stage-step active data-stage=stage-goal>
-        <span class=step-num>1</span>
-        <span class=step-label>Goal</span>
+    <nav class="stages-nav">
+      <div class="stage-step active" data-stage="stage-goal">
+        <span class="step-num">1</span>
+        <span class="step-label">Goal</span>
       </div>
-      <div class=stage-step data-stage=stage-assessment>
-        <span class=step-num>2</span>
-        <span class=step-label>Assessment</span>
+      <div class="stage-step" data-stage="stage-assessment">
+        <span class="step-num">2</span>
+        <span class="step-label">Assessment</span>
       </div>
-      <div class=stage-step data-stage=stage-plan>
-        <span class=step-num>3</span>
-        <span class=step-label>Plan</span>
+      <div class="stage-step" data-stage="stage-plan">
+        <span class="step-num">3</span>
+        <span class="step-label">Plan</span>
       </div>
-      <div class=stage-step data-stage=stage-learn>
-        <span class=step-num>4</span>
-        <span class=step-label>Learn</span>
+      <div class="stage-step" data-stage="stage-learn">
+        <span class="step-num">4</span>
+        <span class="step-label">Learn</span>
       </div>
-      <div class=stage-step data-stage=stage-quiz>
-        <span class=step-num>5</span>
-        <span class=step-label>Quiz</span>
+      <div class="stage-step" data-stage="stage-quiz">
+        <span class="step-num">5</span>
+        <span class="step-label">Quiz</span>
       </div>
-      <div class=stage-step data-stage=stage-practice>
-        <span class=step-num>6</span>
-        <span class=step-label>Practice</span>
+      <div class="stage-step" data-stage="stage-practice">
+        <span class="step-num">6</span>
+        <span class="step-label">Practice</span>
       </div>
-      <div class=stage-step data-stage=stage-performance>
-        <span class=step-num>7</span>
-        <span class=step-label>Performance</span>
+      <div class="stage-step" data-stage="stage-performance">
+        <span class="step-num">7</span>
+        <span class="step-label">Performance</span>
       </div>
     </nav>
 
     <!-- Global Alert Banner -->
-    <div id=error-banner class=alert alert-error hidden></div>
+    <div id="error-banner" class="alert alert-error hidden"></div>
 
     <!-- Main Content Stage Container -->
-    <main class=main-content>
+    <main class="main-content">
 
       <!-- STAGE 1: LEARNING GOAL SCREEN -->
-      <section id=stage-goal class=stage-card>
-        <div class=stage-intro>
+      <section id="stage-goal" class="stage-card">
+        <div class="stage-intro">
           <h2>Start Your Learning Journey</h2>
-          <p class=subtitle>Set your target learning goal and timeline. StudyMate will assess your baseline, design a custom roadmap, teach concepts with RAG grounding, and adapt to your performance.</p>
+          <p class="subtitle">Set your target learning goal and timeline. StudyMate will assess your baseline, design a custom roadmap, teach concepts with RAG grounding, and adapt to your performance.</p>
         </div>
 
-        <form id=goal-form class=learning-form>
-          <div class=form-group>
-            <label for=goal-input class=form-label>What do you want to learn?</label>
+        <form id="goal-form" class="learning-form">
+          <div class="form-group">
+            <label for="goal-input" class="form-label">What do you want to learn?</label>
             <input
-              type=text
-              id=goal-input
-              class=text-input
-              value=I want to learn Python for backend development in 30 days
-              placeholder=e.g. I want to learn Python for backend development in 30 days
+              type="text"
+              id="goal-input"
+              class="text-input"
+              value="I want to learn Python for backend development in 30 days"
+              placeholder="e.g. I want to learn Python for backend development in 30 days"
               required
             />
           </div>
 
-          <div class=form-row>
-            <div class=form-group flex-1>
-              <label for=days-input class=form-label>How much time do you have?</label>
-              <div class=input-addon-wrap>
-                <input type=number id=days-input class=text-input value=30 min=5 max=180 />
-                <span class=input-addon>Days</span>
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="days-input" class="form-label">How much time do you have?</label>
+              <div class="input-addon-wrap">
+                <input type="number" id="days-input" class="text-input" value="30" min="5" max="180" />
+                <span class="input-addon">Days</span>
               </div>
             </div>
 
-            <div class=form-group flex-1>
-              <label for=level-select class=form-label>Current level</label>
-              <select id=level-select class=text-input select-input>
-                <option value=beginner selected>Beginner</option>
-                <option value=intermediate>Intermediate</option>
-                <option value=advanced>Advanced</option>
+            <div class="form-group flex-1">
+              <label for="level-select" class="form-label">Current level</label>
+              <select id="level-select" class="text-input select-input">
+                <option value="beginner" selected>Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
               </select>
             </div>
           </div>
 
-          <div class=stage-actions>
-            <button type=submit id=start-learning-btn class=btn btn-primary btn-lg>
-              <span class=btn-text>Start Learning</span>
-              <span class=spinner hidden></span>
+          <div class="stage-actions">
+            <button type="submit" id="start-learning-btn" class="btn btn-primary btn-lg">
+              <span class="btn-text">Start Learning</span>
+              <span class="spinner hidden"></span>
             </button>
           </div>
         </form>
       </section>
 
       <!-- STAGE 2: ASSESSMENT SCREEN -->
-      <section id=stage-assessment class=stage-card hidden>
-        <div class=stage-header>
-          <span class=badge badge-primary>Agent 1: Assessment</span>
+      <section id="stage-assessment" class="stage-card hidden">
+        <div class="stage-header">
+          <span class="badge badge-primary">Agent 1: Assessment</span>
           <h2>Diagnostic Assessment</h2>
-          <p class=subtitle>Answer this short 3-question diagnostic to help StudyMate gauge your baseline level.</p>
+          <p class="subtitle">Answer this short 3-question diagnostic to help StudyMate gauge your baseline level.</p>
         </div>
 
-        <div id=diagnostic-questions-container class=questions-list>
+        <div id="diagnostic-questions-container" class="questions-list">
           <!-- Rendered dynamically -->
         </div>
 
-        <div class=stage-actions>
-          <button type=button id=submit-assessment-btn class=btn btn-primary>
-            <span class=btn-text>Submit Assessment</span>
-            <span class=spinner hidden></span>
+        <div class="stage-actions">
+          <button type="button" id="submit-assessment-btn" class="btn btn-primary">
+            <span class="btn-text">Submit Assessment</span>
+            <span class="spinner hidden"></span>
           </button>
         </div>
 
         <!-- Assessment Result Banner (shown post submission) -->
-        <div id=assessment-result-box class=result-banner hidden>
-          <div class=result-header>
-            <span class=result-title>Your Assessed Level:</span>
-            <span id=assessed-level-display class=badge badge-accent>BEGINNER</span>
+        <div id="assessment-result-box" class="result-banner hidden">
+          <div class="result-header">
+            <span class="result-title">Your Assessed Level:</span>
+            <span id="assessed-level-display" class="badge badge-accent">BEGINNER</span>
           </div>
-          <p id=assessment-summary-text class=summary-text></p>
-          <div class=stage-actions>
-            <button type=button id=continue-to-plan-btn class=btn btn-success>View Learning Plan →</button>
+          <p id="assessment-summary-text" class="summary-text"></p>
+          <div class="stage-actions">
+            <button type="button" id="continue-to-plan-btn" class="btn btn-success">View Learning Plan →</button>
           </div>
         </div>
       </section>
 
       <!-- STAGE 3: LEARNING PLAN SCREEN -->
-      <section id=stage-plan class=stage-card hidden>
-        <div class=stage-header>
-          <span class=badge badge-primary>Agent 2: Learning Planner</span>
-          <h2 id=plan-roadmap-title>Your Learning Roadmap</h2>
-          <p class=subtitle>Structured 30-day curriculum with progressive milestones saved to your persistent memory.</p>
+      <section id="stage-plan" class="stage-card hidden">
+        <div class="stage-header">
+          <span class="badge badge-primary">Agent 2: Learning Planner</span>
+          <h2 id="plan-roadmap-title">Your Learning Roadmap</h2>
+          <p class="subtitle">Structured 30-day curriculum with progressive milestones saved to your persistent memory.</p>
         </div>
 
-        <div id=roadmap-list class=roadmap-timeline>
+        <div id="roadmap-list" class="roadmap-timeline">
           <!-- Rendered dynamically -->
         </div>
 
-        <div class=stage-actions>
-          <button type=button id=start-first-lesson-btn class=btn btn-primary btn-lg>
+        <div class="stage-actions">
+          <button type="button" id="start-first-lesson-btn" class="btn btn-primary btn-lg">
             Start Current Lesson →
           </button>
         </div>
       </section>
 
       <!-- STAGE 4: LEARN / CONCEPT SCREEN -->
-      <section id=stage-learn class=stage-card hidden>
-        <div class=stage-header>
-          <div class=header-tags>
-            <span class=badge badge-primary>Agent 3: Concept / Tutor</span>
-            <span class=grounding-tag>📚 Local RAG Grounded</span>
+      <section id="stage-learn" class="stage-card hidden">
+        <div class="stage-header">
+          <div class="header-tags">
+            <span class="badge badge-primary">Agent 3: Concept / Tutor</span>
+            <span class="grounding-tag">📚 Local RAG Grounded</span>
           </div>
-          <h2 id=learn-topic-title>Current Topic: Python Fundamentals &amp; Data Structures</h2>
+          <h2 id="learn-topic-title">Current Topic: Python Fundamentals &amp; Data Structures</h2>
         </div>
 
-        <div class=content-card>
-          <div id=learn-explanation class=markdown-body>
+        <div class="content-card">
+          <div id="learn-explanation" class="markdown-body">
             <!-- Tutor Explanation -->
           </div>
 
-          <div class=takeaways-box>
+          <div class="takeaways-box">
             <h3>Key Concepts</h3>
-            <ul id=learn-key-points class=key-points-list></ul>
+            <ul id="learn-key-points" class="key-points-list"></ul>
           </div>
 
-          <div class=sources-box>
+          <div class="sources-box">
             <h4>Authoritative RAG Grounded Sources</h4>
-            <div id=learn-sources-tags class=sources-tags></div>
+            <div id="learn-sources-tags" class="sources-tags"></div>
           </div>
         </div>
 
-        <div class=stage-actions>
-          <button type=button id=go-to-quiz-btn class=btn btn-primary btn-lg>
+        <div class="stage-actions">
+          <button type="button" id="go-to-quiz-btn" class="btn btn-primary btn-lg">
             Take Quiz →
           </button>
         </div>
       </section>
 
       <!-- STAGE 5: QUIZ SCREEN (3-5 Questions) -->
-      <section id=stage-quiz class=stage-card hidden>
-        <div class=stage-header>
-          <span class=badge badge-primary>Agent 4: Quiz Agent</span>
-          <h2 id=quiz-topic-title>Knowledge Check</h2>
-          <p class=subtitle>Test your comprehension with 5 calibrated questions. Answers are evaluated objectively.</p>
+      <section id="stage-quiz" class="stage-card hidden">
+        <div class="stage-header">
+          <span class="badge badge-primary">Agent 4: Quiz Agent</span>
+          <h2 id="quiz-topic-title">Knowledge Check</h2>
+          <p class="subtitle">Test your comprehension with 5 calibrated questions. Answers are evaluated objectively.</p>
         </div>
 
-        <div id=quiz-questions-form class=questions-list>
+        <div id="quiz-questions-form" class="questions-list">
           <!-- 5 Questions rendered dynamically -->
         </div>
 
-        <div class=stage-actions id=quiz-actions-container>
-          <button type=button id=submit-quiz-btn class=btn btn-primary btn-lg>
-            <span class=btn-text>Submit Quiz</span>
-            <span class=spinner hidden></span>
+        <div class="stage-actions" id="quiz-actions-container">
+          <button type="button" id="submit-quiz-btn" class="btn btn-primary btn-lg">
+            <span class="btn-text">Submit Quiz</span>
+            <span class="spinner hidden"></span>
           </button>
         </div>
 
         <!-- Quiz Result Box (shown after Submit Quiz) -->
-        <div id=quiz-result-card class=quiz-result-card hidden>
-          <div class=quiz-score-banner>
-            <div class=score-circle>
-              <span id=quiz-score-fraction>4 / 5</span>
-              <span id=quiz-score-pct class=score-pct>80%</span>
+        <div id="quiz-result-card" class="quiz-result-card hidden">
+          <div class="quiz-score-banner">
+            <div class="score-circle">
+              <span id="quiz-score-fraction">4 / 5</span>
+              <span id="quiz-score-pct" class="score-pct">80%</span>
             </div>
-            <div class=score-summary>
-              <h3 id=quiz-status-title>Quiz Complete 🎉</h3>
-              <p id=quiz-score-feedback>Demonstrated strong grasp of core syntax and time complexities.</p>
+            <div class="score-summary">
+              <h3 id="quiz-status-title">Quiz Complete 🎉</h3>
+              <p id="quiz-score-feedback">Demonstrated strong grasp of core syntax and time complexities.</p>
             </div>
           </div>
 
-          <div id=quiz-breakdown-list class=quiz-breakdown>
+          <div id="quiz-breakdown-list" class="quiz-breakdown">
             <!-- Breakdown with checks/crosses -->
           </div>
 
-          <div class=stage-actions>
-            <button type=button id=continue-to-practice-btn class=btn btn-success btn-lg>
+          <div class="stage-actions">
+            <button type="button" id="continue-to-practice-btn" class="btn btn-success btn-lg">
               Continue to Practice Lab →
             </button>
           </div>
@@ -301,75 +301,75 @@
       </section>
 
       <!-- STAGE 7: PERFORMANCE & CONDITIONAL ROUTING SCREEN -->
-      <section id=stage-performance class=stage-card hidden>
-        <div class=stage-header>
-          <span class=badge badge-primary>Agents 6, 7 &amp; 8: Evaluation &amp; Performance</span>
+      <section id="stage-performance" class="stage-card hidden">
+        <div class="stage-header">
+          <span class="badge badge-primary">Agents 6, 7 &amp; 8: Evaluation &amp; Performance</span>
           <h2>Session Evaluation &amp; Routing</h2>
-          <p class=subtitle>LangGraph aggregates quiz results, practice code validation, and pace metrics to make the conditional routing decision.</p>
+          <p class="subtitle">LangGraph aggregates quiz results, practice code validation, and pace metrics to make the conditional routing decision.</p>
         </div>
 
         <!-- Scores Breakdown -->
-        <div class=perf-scores-grid>
-          <div class=perf-score-card>
-            <span class=score-label>Quiz Score</span>
-            <span id=perf-quiz-score class=score-val>80%</span>
+        <div class="perf-scores-grid">
+          <div class="perf-score-card">
+            <span class="score-label">Quiz Score</span>
+            <span id="perf-quiz-score" class="score-val">80%</span>
           </div>
-          <div class=perf-score-card>
-            <span class=score-label>Practice Score</span>
-            <span id=perf-practice-score class=score-val>85%</span>
+          <div class="perf-score-card">
+            <span class="score-label">Practice Score</span>
+            <span id="perf-practice-score" class="score-val">85%</span>
           </div>
-          <div class=perf-score-card>
-            <span class=score-label>Overall Mastery</span>
-            <span id=perf-overall-score class=score-val>83%</span>
+          <div class="perf-score-card">
+            <span class="score-label">Overall Mastery</span>
+            <span id="perf-overall-score" class="score-val">83%</span>
           </div>
-          <div class=perf-score-card>
-            <span class=score-label>Deadline Pace</span>
-            <span id=perf-pace-status class=score-val>On Track</span>
+          <div class="perf-score-card">
+            <span class="score-label">Deadline Pace</span>
+            <span id="perf-pace-status" class="score-val">On Track</span>
           </div>
         </div>
 
         <!-- Strengths & Areas for Reinforcement -->
-        <div class=insights-grid>
-          <div class=insight-box insight-strong>
+        <div class="insights-grid">
+          <div class="insight-box insight-strong">
             <h4>✓ Strong Concepts</h4>
-            <ul id=perf-strong-list></ul>
+            <ul id="perf-strong-list"></ul>
           </div>
-          <div class=insight-box insight-weak>
+          <div class="insight-box insight-weak">
             <h4>⚠ Areas to Reinforce</h4>
-            <ul id=perf-weak-list></ul>
+            <ul id="perf-weak-list"></ul>
           </div>
         </div>
 
-        <div id=evaluator-feedback-box class=feedback-card>
+        <div id="evaluator-feedback-box" class="feedback-card">
           <h4>Evaluator Feedback</h4>
-          <p id=evaluator-feedback-text></p>
+          <p id="evaluator-feedback-text"></p>
         </div>
 
         <!-- CONDITIONAL ROUTING CARD (ADVANCE vs REINFORCE vs FULL REPLAN) -->
-        <div id=routing-decision-card class=routing-decision-card>
-          <div class=decision-header>
-            <span class=decision-label>LangGraph Conditional Router Decision:</span>
-            <span id=routing-decision-pill class=routing-pill pill-advance>🟢 ADVANCE</span>
+        <div id="routing-decision-card" class="routing-decision-card">
+          <div class="decision-header">
+            <span class="decision-label">LangGraph Conditional Router Decision:</span>
+            <span id="routing-decision-pill" class="routing-pill pill-advance">🟢 ADVANCE</span>
           </div>
-          <p id=routing-decision-text class=decision-explanation></p>
-          <div id=planner-update-box class=replan-box hidden>
+          <p id="routing-decision-text" class="decision-explanation"></p>
+          <div id="planner-update-box" class="replan-box hidden">
             <h4>🔄 Planner Update Agent Action</h4>
-            <p id=planner-update-text></p>
+            <p id="planner-update-text"></p>
           </div>
 
-          <div class=stage-actions>
-            <button type=button id=next-task-btn class=btn btn-primary btn-lg>
-              <span id=next-task-btn-text>Proceed to Next Task →</span>
-              <span class=spinner hidden></span>
+          <div class="stage-actions">
+            <button type="button" id="next-task-btn" class="btn btn-primary btn-lg">
+              <span id="next-task-btn-text">Proceed to Next Task →</span>
+              <span class="spinner hidden"></span>
             </button>
           </div>
         </div>
 
         <!-- LangGraph Workflow History Trace -->
-        <div class=workflow-trace>
+        <div class="workflow-trace">
           <details>
             <summary>🔍 View LangGraph Execution Trace</summary>
-            <div id=workflow-steps-flow class=workflow-steps-flow></div>
+            <div id="workflow-steps-flow" class="workflow-steps-flow"></div>
           </details>
         </div>
       </section>
@@ -377,28 +377,28 @@
     </main>
 
     <!-- Persistent Memory Drawer / History -->
-    <aside class=memory-drawer>
-      <div class=drawer-header id=drawer-toggle>
-        <span class=drawer-title>Persistent Memory (Tier 2 SQLite)</span>
-        <span class=drawer-icon>▼</span>
+    <aside class="memory-drawer">
+      <div class="drawer-header" id="drawer-toggle">
+        <span class="drawer-title">Persistent Memory (Tier 2 SQLite)</span>
+        <span class="drawer-icon">▼</span>
       </div>
-      <div id=drawer-content class=drawer-content>
-        <div id=mastery-section class=mastery-section>
+      <div id="drawer-content" class="drawer-content">
+        <div id="mastery-section" class="mastery-section">
           <h4>Topic Mastery</h4>
-          <div id=mastery-badges class=mastery-badges></div>
+          <div id="mastery-badges" class="mastery-badges"></div>
         </div>
         <h4>Previous Learning Sessions</h4>
-        <ul id=sessions-history-list class=sessions-list>
-          <li class=empty-msg>No historical sessions recorded yet.</li>
+        <ul id="sessions-history-list" class="sessions-list">
+          <li class="empty-msg">No historical sessions recorded yet.</li>
         </ul>
       </div>
     </aside>
 
-    <footer class=app-footer>
+    <footer class="app-footer">
       <p>StudyMate • 8 Agents • LangGraph Real Cyclic Graph • 3-Way Routing • Local RAG • SQLite Tier 2 Memory</p>
     </footer>
   </div>
 
-  <script src=/static/app.js></script>
+  <script src="/static/app.js"></script>
 </body>
 </html>
