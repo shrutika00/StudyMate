@@ -158,6 +158,19 @@ class PlannerUpdate(BaseModel):
 # ==========================================
 # 8. API Requests & Responses
 # ==========================================
+class CodeExecutionRequest(BaseModel):
+    code: str
+    timeout_seconds: Optional[int] = Field(default=5, ge=1, le=15)
+
+
+class CodeExecutionResponse(BaseModel):
+    success: bool
+    stdout: str
+    stderr: str
+    exit_code: int
+    error: Optional[str] = None
+
+
 class StudyRequest(BaseModel):
     student_id: Optional[str] = Field(default="student_default")
     learning_goal: Optional[str] = Field(default="I want to learn Python for backend development in 30 days")

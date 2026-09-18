@@ -47,9 +47,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // Stage 6: Practice
   const practiceExerciseTitle = document.getElementById('practice-exercise-title');
   const practiceProblemStatement = document.getElementById('practice-problem-statement');
+  const practiceExpectedContainer = document.getElementById('practice-expected-container');
+  const practiceExpectedOutput = document.getElementById('practice-expected-output');
   const practiceCodeArea = document.getElementById('practice-code-area');
   const practiceHintsList = document.getElementById('practice-hints-list');
   const resetCodeBtn = document.getElementById('reset-code-btn');
+  const runCodeBtn = document.getElementById('run-code-btn');
+  const practiceConsoleContainer = document.getElementById('practice-console-container');
+  const consoleStatusIndicator = document.getElementById('console-status-indicator');
+  const practiceConsoleOutput = document.getElementById('practice-console-output');
+  const clearConsoleBtn = document.getElementById('clear-console-btn');
   const submitPracticeBtn = document.getElementById('submit-practice-btn');
 
   // Stage 7: Performance & Conditional Routing
@@ -471,8 +478,20 @@ document.addEventListener('DOMContentLoaded', () => {
     practiceExerciseTitle.textContent = practice.title || 'Implement Core Functionality';
     practiceProblemStatement.textContent = practice.problem_statement || 'Write a Python function that solves the target challenge.';
     
+    if (practice.expected_output && practice.expected_output.trim()) {
+      practiceExpectedOutput.textContent = practice.expected_output;
+      practiceExpectedContainer.classList.remove('hidden');
+    } else {
+      practiceExpectedContainer.classList.add('hidden');
+    }
+
     starterPracticeCodeBackup = practice.starter_code || 'def solve():\n    # Implement solution\n    pass';
     practiceCodeArea.value = starterPracticeCodeBackup;
+
+    // Reset console
+    practiceConsoleContainer.classList.add('hidden');
+    practiceConsoleOutput.textContent = '';
+    practiceConsoleOutput.classList.remove('error');
 
     practiceHintsList.innerHTML = '';
     (practice.hints || ['Use dictionary lookup or counter', 'Ensure return type matches expected output']).forEach(h => {
@@ -484,6 +503,61 @@ document.addEventListener('DOMContentLoaded', () => {
 
   resetCodeBtn.addEventListener('click', () => {
     practiceCodeArea.value = starterPracticeCodeBackup;
+    practiceConsoleContainer.classList.add('hidden');
+    practiceConsoleOutput.textContent = '';
+  });
+
+  clearConsoleBtn.addEventListener('click', () => {
+    practiceConsoleContainer.classList.add('hidden');
+    practiceConsoleOutput.textContent = '';
+  });
+
+  // Run Code in Sandbox Subprocess
+  runCodeBtn.addEventListener('click', async () => {
+    const codeToRun = practiceCodeArea.value.trim();
+    if (!codeToRun) {
+      showError('Please write some Python code before running.');
+      return;
+    }
+
+    hideError();
+    setLoading(runCodeBtn, true, 'Running Code...');
+
+    try {
+      const res = await fetch('/execute-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: practiceCodeArea.value,
+          timeout_seconds: 5
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Code execution failed on server.');
+
+      practiceConsoleContainer.classList.remove('hidden');
+
+      if (data.success) {
+        consoleStatusIndicator.className = 'status-indicator success';
+        consoleStatusIndicator.textContent = '✓ Execution Succeeded (Exit Code 0)';
+        practiceConsoleOutput.className = 'console-output';
+        practiceConsoleOutput.textContent = data.stdout || '(Program completed successfully with no stdout output)';
+      } else {
+        consoleStatusIndicator.className = 'status-indicator error';
+        consoleStatusIndicator.textContent = '✗ Execution Failed (Exit Code ' + data.exit_code + ')';
+        practiceConsoleOutput.className = 'console-output error';
+        practiceConsoleOutput.textContent = (data.stderr || data.error || 'Execution encountered an error.') + (data.stdout ? '\n\n--- Standard Output ---\n' + data.stdout : '');
+      }
+    } catch (err) {
+      practiceConsoleContainer.classList.remove('hidden');
+      consoleStatusIndicator.className = 'status-indicator error';
+      consoleStatusIndicator.textContent = '✗ Execution Error';
+      practiceConsoleOutput.className = 'console-output error';
+      practiceConsoleOutput.textContent = err.message;
+    } finally {
+      setLoading(runCodeBtn, false, '▶ Run Code');
+    }
   });
 
   submitPracticeBtn.addEventListener('click', async () => {
@@ -514,7 +588,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       showError(err.message);
     } finally {
-      setLoading(submitPracticeBtn, false, 'Submit Practice & Run Evaluation');
+      setLoading(submitPracticeBtn, false, 'Submit Solution for Evaluation →');
     }
   });
 

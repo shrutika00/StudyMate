@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang=en>
 <head>
   <meta charset=UTF-8 />
@@ -237,36 +237,65 @@
       </section>
 
       <!-- STAGE 6: PRACTICE SCREEN -->
-      <section id=stage-practice class=stage-card hidden>
-        <div class=stage-header>
-          <span class=badge badge-primary>Agent 5: Practice Agent</span>
-          <h2 id=practice-exercise-title>Hands-On Code Challenge</h2>
-          <p class=subtitle>Implement a practical solution. Your code will undergo deterministic syntax analysis and evaluation.</p>
+      <section id="stage-practice" class="stage-card hidden">
+        <div class="stage-header">
+          <span class="badge badge-primary">Agent 5: Practice Agent</span>
+          <h2 id="practice-exercise-title">Hands-On Code Challenge</h2>
+          <p class="subtitle">Write your solution in the editor below. You can run and test your code before submitting for evaluation.</p>
         </div>
 
-        <div class=practice-card>
-          <p id=practice-problem-statement class=problem-statement></p>
-          
-          <div class=code-workspace>
-            <div class=code-header>
-              <span>Solution Editor (Python)</span>
-              <button type=button id=reset-code-btn class=btn-xs btn-ghost>Reset Code</button>
+        <div class="practice-card">
+          <!-- Clear Coding Instructions & Expected Behavior -->
+          <div class="practice-instructions-panel">
+            <div class="instruction-row">
+              <span class="instruction-label">Task Instructions:</span>
+              <p id="practice-problem-statement" class="problem-statement"></p>
             </div>
-            <textarea id=practice-code-area class=code-editor rows=7 spellcheck=false></textarea>
+            <div id="practice-expected-container" class="expected-output-box">
+              <span class="expected-label">Expected Output / Behavior:</span>
+              <code id="practice-expected-output" class="expected-code"></code>
+            </div>
+          </div>
+          
+          <div class="code-workspace">
+            <div class="code-header">
+              <span class="editor-title">Python 3.13 Solution Editor</span>
+              <div class="editor-header-actions">
+                <button type="button" id="reset-code-btn" class="btn-xs btn-ghost" title="Reset code to original starter template">Reset Template</button>
+              </div>
+            </div>
+            <textarea id="practice-code-area" class="code-editor" rows="9" spellcheck="false" placeholder="# Write your Python code here..."></textarea>
+            
+            <div class="code-editor-toolbar">
+              <button type="button" id="run-code-btn" class="btn btn-secondary btn-sm">
+                <span class="btn-text">▶ Run Code</span>
+                <span class="spinner hidden"></span>
+              </button>
+              <span class="toolbar-hint">Test your solution safely in sandbox before submission</span>
+            </div>
+
+            <!-- Execution Console Output / Errors -->
+            <div id="practice-console-container" class="console-panel hidden">
+              <div class="console-header">
+                <span id="console-status-indicator" class="status-indicator">Execution Output</span>
+                <button type="button" id="clear-console-btn" class="btn-xs btn-ghost">Clear</button>
+              </div>
+              <pre id="practice-console-output" class="console-output"></pre>
+            </div>
           </div>
 
-          <div class=hints-box>
+          <div class="hints-box">
             <details>
               <summary>💡 Helpful Hints</summary>
-              <ul id=practice-hints-list></ul>
+              <ul id="practice-hints-list"></ul>
             </details>
           </div>
         </div>
 
-        <div class=stage-actions>
-          <button type=button id=submit-practice-btn class=btn btn-primary btn-lg>
-            <span class=btn-text>Submit Practice &amp; Run Evaluation</span>
-            <span class=spinner hidden></span>
+        <div class="stage-actions">
+          <button type="button" id="submit-practice-btn" class="btn btn-primary btn-lg">
+            <span class="btn-text">Submit Solution for Evaluation →</span>
+            <span class="spinner hidden"></span>
           </button>
         </div>
       </section>

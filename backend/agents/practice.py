@@ -51,15 +51,15 @@ Level: {level}
 Retrieved Technical Reference:
 {context_str[:600]}
 
-Design a realistic, hands-on programming exercise or problem-solving challenge.
-Provide starter code and expected output or behavior.
+Design a realistic, hands-on programming exercise or problem-solving challenge directly relevant to "{topic}".
+Provide clear instructions, starter code with a callable test/demonstration at the bottom so the student can immediately click "Run Code" and see the output, and specify the expected output.
 
 Output valid JSON matching this schema:
 {{
   "title": "Build a Resilient Memory Cache",
   "problem_statement": "Write a Python function 'get_user_cache(user_ids: list)' that deduplicates IDs and stores lookup counts in a dictionary.",
-  "starter_code": "def get_user_cache(user_ids: list) -> dict:\\n    # Your implementation here\\n    pass",
-  "expected_output": "Dictionary mapping unique user_id to occurrence frequency",
+  "starter_code": "def get_user_cache(user_ids: list) -> dict:\\n    # Your implementation here\\n    pass\\n\\n# Test your solution\\nids = ['u1', 'u2', 'u1', 'u3', 'u2', 'u1']\\nprint('Cache result:', get_user_cache(ids))",
+  "expected_output": "Cache result: {{'u1': 3, 'u2': 2, 'u3': 1}}",
   "hints": ["Use dict.get(key, 0) + 1 or collections.Counter"]
 }}"""
 

@@ -23,7 +23,9 @@ from .models.schemas import (
     PracticeExercise,
     EvaluationResult,
     PerformanceAnalysis,
-    RoadmapItem
+    RoadmapItem,
+    CodeExecutionRequest,
+    CodeExecutionResponse
 )
 from .state import StudyState
 from .graph import study_graph
@@ -186,3 +188,14 @@ def progress_endpoint(student_id: str = Query(default="student_default")):
         "current_topic_index": roadmap_info["current_topic_index"] if roadmap_info else 0,
         "mastery_records": mastery
     }
+
+
+@app.post("/execute-code", response_model=CodeExecutionResponse, summary="Safely execute Python code from Practice Agent editor")
+def execute_code_endpoint(request: CodeExecutionRequest):
+    """
+    Safely executes student code from the Practice Agent code editor in an isolated sandbox subprocess.
+    Returns stdout, stderr, exit code, and execution status.
+    """
+    from .agents.code_executor import execute_code_safely
+    res = execute_code_safely(request.code, timeout_seconds=request.timeout_seconds or 5)
+    return CodeExecutionResponse(**res)
